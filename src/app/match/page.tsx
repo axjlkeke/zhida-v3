@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchApiJson } from "@/lib/api";
 import { getDataMode } from "@/lib/dataMode";
@@ -23,36 +23,85 @@ type MatchResponse = {
   items: MatchItem[];
 };
 
+const normalizeMatches = (resp: unknown): MatchItem[] => {
+  if (Array.isArray(resp)) {
+    return resp as MatchItem[];
+  }
+  if (resp && typeof resp === "object") {
+    const candidate = resp as { data?: unknown; items?: unknown };
+    if (Array.isArray(candidate.data)) {
+      return candidate.data as MatchItem[];
+    }
+    if (Array.isArray(candidate.items)) {
+      return candidate.items as MatchItem[];
+    }
+  }
+  return [];
+};
+
 export default function MatchPage() {
   const [studentId, setStudentId] = useState("1");
   const [items, setItems] = useState<MatchItem[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-    const dataMode = useMemo(() => getDataMode(), []);
-    const { mode, source } = dataMode;
+  const dataMode = useMemo(() => getDataMode(), []);
+  const { mode, source } = dataMode;
+  const [mockLoaded, setMockLoaded] = useState(false);
+  const [mockRows, setMockRows] = useState(0);
+  const [mockSource] = useState("/mock/m2_match.json");
 
-    const banner = mode === "mock" ? (
+  const banner = mode === "mock" ? (
     <div className="rounded-md border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
-        Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
+      Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
+      <div className="mt-1 text-xs text-yellow-700">
+        mock_loaded: {mockLoaded ? "true" : "false"} · mock_rows: {mockRows} · mock_source: {mockSource}
+    </div>
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
-        Real API Mode (mode=real, source={source})：已连接后端。
+      Real API Mode (mode=real, source={source})：已连接后端。
     </div>
   );
 
-    const handleRun = async () => {
+  const loadMock = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const mockRes = await fetch(mockSource);
+      const mockJson = (await mockRes.json()) as unknown;
+      const normalized = normalizeMatches(mockJson);
+      const runIdFromPayload =
+        typeof (mockJson as { run_id?: unknown })?.run_id === "string"
+          ? (mockJson as { run_id: string }).run_id
+          : null;
+      setItems(normalized);
+      setRunId(runIdFromPayload);
+      setMockLoaded(true);
+      setMockRows(normalized.length);
+    } catch {
+      setMockLoaded(false);
+      setMockRows(0);
+      setError("无法加载样例数据，请稍后重试。");
+    } finally {
+      setLoading(false);
+    }
+  }, [mockSource]);
+
+  useEffect(() => {
+    if (mode === "mock") {
+      loadMock();
+    }
+  }, [loadMock, mode]);
+
+  const handleRun = async () => {
     setLoading(true);
     setError(null);
     try {
-        if (mode === "mock") {
-          const mockRes = await fetch("/mock/m2_match.json");
-          const mockJson = (await mockRes.json()) as MatchResponse;
-          setItems(mockJson.items ?? []);
-          setRunId(mockJson.run_id ?? null);
-          return;
-        }
+      if (mode === "mock") {
+        await loadMock();
+        return;
+      }
       const payload = {
         studentIds: [Number(studentId)],
         limitPerStudent: 50,
@@ -66,8 +115,8 @@ export default function MatchPage() {
       });
       setItems(data.items ?? []);
       setRunId(data.run_id ?? null);
-      } catch {
-        setError("运行失败，请稍后重试。");
+    } catch {
+      setError("运行失败，请稍后重试。");
     } finally {
       setLoading(false);
     }

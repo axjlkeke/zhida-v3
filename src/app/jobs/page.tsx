@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchApiJson } from "@/lib/api";
 import { getDataMode } from "@/lib/dataMode";
@@ -31,6 +31,22 @@ type JobsResponse = {
   page_size: number;
 };
 
+const normalizeJobs = (resp: unknown): JobItem[] => {
+  if (Array.isArray(resp)) {
+    return resp as JobItem[];
+  }
+  if (resp && typeof resp === "object") {
+    const candidate = resp as { data?: unknown; items?: unknown };
+    if (Array.isArray(candidate.data)) {
+      return candidate.data as JobItem[];
+    }
+    if (Array.isArray(candidate.items)) {
+      return candidate.items as JobItem[];
+    }
+  }
+  return [];
+};
+
 const DEFAULT_FORM = {
   company: "",
   title: "",
@@ -48,8 +64,11 @@ export default function JobsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-    const dataMode = useMemo(() => getDataMode(), []);
-    const { mode, source } = dataMode;
+  const dataMode = useMemo(() => getDataMode(), []);
+  const { mode, source } = dataMode;
+  const [mockLoaded, setMockLoaded] = useState(false);
+  const [mockRows, setMockRows] = useState(0);
+  const [mockSource] = useState("/mock/jobs_search.json");
 
   const query = useMemo(() => {
     return {
@@ -66,37 +85,67 @@ export default function JobsPage() {
     };
   }, [form]);
 
-    const banner = mode === "mock" ? (
+  const banner = mode === "mock" ? (
     <div className="rounded-md border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
-        Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
+      Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
+      <div className="mt-1 text-xs text-yellow-700">
+        mock_loaded: {mockLoaded ? "true" : "false"} · mock_rows: {mockRows} · mock_source: {mockSource}
+    </div>
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
-        Real API Mode (mode=real, source={source})：已连接后端。
+      Real API Mode (mode=real, source={source})：已连接后端。
     </div>
   );
 
-    const handleSearch = async () => {
+  const loadMock = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const mockRes = await fetch(mockSource);
+      const mockJson = (await mockRes.json()) as unknown;
+      const normalized = normalizeJobs(mockJson);
+      const totalFromPayload =
+        typeof (mockJson as { total?: unknown })?.total === "number"
+          ? (mockJson as { total: number }).total
+          : normalized.length;
+      setItems(normalized);
+      setTotal(totalFromPayload);
+      setMockLoaded(true);
+      setMockRows(normalized.length);
+    } catch {
+      setMockLoaded(false);
+      setMockRows(0);
+      setError("无法加载样例数据，请稍后重试。");
+    } finally {
+      setLoading(false);
+    }
+  }, [mockSource]);
+
+  useEffect(() => {
+    if (mode === "mock") {
+      loadMock();
+    }
+  }, [loadMock, mode]);
+
+  const handleSearch = async () => {
     setLoading(true);
     setError(null);
-      try {
-        if (mode === "mock") {
-          const mockRes = await fetch("/mock/jobs_search.json");
-          const mockJson = await mockRes.json();
-          setItems(mockJson.data ?? []);
-          setTotal(mockJson.total ?? (mockJson.data ?? []).length);
-          return;
-        }
-        const data = await fetchApiJson<JobsResponse>("/m1/jobs/search", {
-          query,
-        });
-        setItems(data.data ?? []);
-        setTotal(data.total ?? 0);
-      } catch {
-        setError("无法加载数据，请稍后重试。");
-      } finally {
-        setLoading(false);
+    try {
+      if (mode === "mock") {
+        await loadMock();
+        return;
       }
+      const data = await fetchApiJson<JobsResponse>("/m1/jobs/search", {
+        query,
+      });
+      setItems(data.data ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      setError("无法加载数据，请稍后重试。");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const exportCsvUrl = buildApiUrl("/m1/jobs/search.csv", query);
