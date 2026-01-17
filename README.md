@@ -5,6 +5,20 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 前端联调：使用 `.env.example` 配置 `NEXT_PUBLIC_API_BASE_URL`（本机默认 `http://127.0.0.1:3001`）。
 当后端不可达时，页面会进入 Mock Mode 并展示 `public/mock` 中的样例数据。
 
+## Data Mode
+
+数据模式由统一入口判定（`src/lib/dataMode.ts`），规则如下：
+
+1) `NEXT_PUBLIC_DATA_MODE=mock` => 强制 Mock
+2) `NEXT_PUBLIC_DATA_MODE=real` => 强制 Real
+3) 否则若 `VERCEL_ENV=preview` => 默认 Mock
+4) 其余 => Real
+
+说明：
+- Preview 环境可通过 `NEXT_PUBLIC_DATA_MODE=mock` 强制使用 Mock（更稳）。
+- 生产环境可显式设置 `NEXT_PUBLIC_DATA_MODE=real`。
+- Mock 数据来源固定为 `public/mock/*.json`。
+
 ## Getting Started
 
 First, run the development server:

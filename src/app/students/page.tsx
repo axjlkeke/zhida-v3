@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchJson, getApiTimeoutMs } from "@/lib/api";
+import { getDataMode } from "@/lib/dataMode";
 
 type ImportResult = {
   ok: boolean;
@@ -14,21 +15,22 @@ type ImportResult = {
 export default function StudentsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
-  const [mode, setMode] = useState<"real" | "mock">("real");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+    const dataMode = useMemo(() => getDataMode(), []);
+    const { mode, source } = dataMode;
 
-  const banner = mode === "mock" ? (
+    const banner = mode === "mock" ? (
     <div className="rounded-md border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
-      Mock Mode：后端不可达，展示样例数据。
+        Mock Mode (mode=mock, source={source})：展示样例数据。
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
-      Real API Mode：已连接后端。
+        Real API Mode (mode=real, source={source})：已连接后端。
     </div>
   );
 
-  const handleUpload = async () => {
+    const handleUpload = async () => {
     if (!file) {
       setError("请先选择文件");
       return;
@@ -36,6 +38,12 @@ export default function StudentsPage() {
     setLoading(true);
     setError(null);
     try {
+        if (mode === "mock") {
+          const mockRes = await fetch("/mock/m2_import.json");
+          const mockJson = (await mockRes.json()) as ImportResult;
+          setResult(mockJson);
+          return;
+        }
       const formData = new FormData();
       formData.append("file", file);
       const response = await fetchJson<ImportResult>(buildApiUrl("/m2/import/students"), {
@@ -49,16 +57,8 @@ export default function StudentsPage() {
         throw new Error(response.error);
       }
       setResult(response.data);
-      setMode("real");
-    } catch (err) {
-      try {
-        const mockRes = await fetch("/mock/m2_import.json");
-        const mockJson = (await mockRes.json()) as ImportResult;
-        setResult(mockJson);
-        setMode("mock");
       } catch {
         setError("上传失败，请稍后重试。");
-      }
     } finally {
       setLoading(false);
     }

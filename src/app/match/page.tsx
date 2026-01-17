@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchApiJson } from "@/lib/api";
+import { getDataMode } from "@/lib/dataMode";
 
 type MatchItem = {
   student_id: number;
@@ -26,24 +27,32 @@ export default function MatchPage() {
   const [studentId, setStudentId] = useState("1");
   const [items, setItems] = useState<MatchItem[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
-  const [mode, setMode] = useState<"real" | "mock">("real");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+    const dataMode = useMemo(() => getDataMode(), []);
+    const { mode, source } = dataMode;
 
-  const banner = mode === "mock" ? (
+    const banner = mode === "mock" ? (
     <div className="rounded-md border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
-      Mock Mode：后端不可达，展示样例数据，导出已禁用。
+        Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
-      Real API Mode：已连接后端。
+        Real API Mode (mode=real, source={source})：已连接后端。
     </div>
   );
 
-  const handleRun = async () => {
+    const handleRun = async () => {
     setLoading(true);
     setError(null);
     try {
+        if (mode === "mock") {
+          const mockRes = await fetch("/mock/m2_match.json");
+          const mockJson = (await mockRes.json()) as MatchResponse;
+          setItems(mockJson.items ?? []);
+          setRunId(mockJson.run_id ?? null);
+          return;
+        }
       const payload = {
         studentIds: [Number(studentId)],
         limitPerStudent: 50,
@@ -57,17 +66,8 @@ export default function MatchPage() {
       });
       setItems(data.items ?? []);
       setRunId(data.run_id ?? null);
-      setMode("real");
-    } catch (err) {
-      try {
-        const mockRes = await fetch("/mock/m2_match.json");
-        const mockJson = (await mockRes.json()) as MatchResponse;
-        setItems(mockJson.items ?? []);
-        setRunId(mockJson.run_id ?? null);
-        setMode("mock");
       } catch {
         setError("运行失败，请稍后重试。");
-      }
     } finally {
       setLoading(false);
     }

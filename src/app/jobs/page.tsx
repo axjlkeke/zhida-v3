@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchApiJson } from "@/lib/api";
+import { getDataMode } from "@/lib/dataMode";
 
 type HitReason = {
   query: string;
@@ -45,9 +46,10 @@ export default function JobsPage() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [items, setItems] = useState<JobItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [mode, setMode] = useState<"real" | "mock">("real");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+    const dataMode = useMemo(() => getDataMode(), []);
+    const { mode, source } = dataMode;
 
   const query = useMemo(() => {
     return {
@@ -64,39 +66,37 @@ export default function JobsPage() {
     };
   }, [form]);
 
-  const banner = mode === "mock" ? (
+    const banner = mode === "mock" ? (
     <div className="rounded-md border border-yellow-400 bg-yellow-50 p-3 text-sm text-yellow-800">
-      Mock Mode：后端不可达，展示样例数据，导出已禁用。
+        Mock Mode (mode=mock, source={source})：展示样例数据，导出已禁用。
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
-      Real API Mode：已连接后端。
+        Real API Mode (mode=real, source={source})：已连接后端。
     </div>
   );
 
-  const handleSearch = async () => {
+    const handleSearch = async () => {
     setLoading(true);
     setError(null);
-    try {
-      const data = await fetchApiJson<JobsResponse>("/m1/jobs/search", {
-        query,
-      });
-      setItems(data.data ?? []);
-      setTotal(data.total ?? 0);
-      setMode("real");
-    } catch (err) {
       try {
-        const mockRes = await fetch("/mock/jobs_search.json");
-        const mockJson = await mockRes.json();
-        setItems(mockJson.data ?? []);
-        setTotal(mockJson.total ?? (mockJson.data ?? []).length);
-        setMode("mock");
+        if (mode === "mock") {
+          const mockRes = await fetch("/mock/jobs_search.json");
+          const mockJson = await mockRes.json();
+          setItems(mockJson.data ?? []);
+          setTotal(mockJson.total ?? (mockJson.data ?? []).length);
+          return;
+        }
+        const data = await fetchApiJson<JobsResponse>("/m1/jobs/search", {
+          query,
+        });
+        setItems(data.data ?? []);
+        setTotal(data.total ?? 0);
       } catch {
         setError("无法加载数据，请稍后重试。");
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
   };
 
   const exportCsvUrl = buildApiUrl("/m1/jobs/search.csv", query);
