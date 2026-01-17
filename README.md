@@ -2,6 +2,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 项目唯一状态文档在后端仓库 `zhida-api/PROJECT_STATE.md`。
 
+前端联调：使用 `.env.example` 配置 `NEXT_PUBLIC_API_BASE_URL`（本机默认 `http://127.0.0.1:3001`）。
+当后端不可达时，页面会进入 Mock Mode 并展示 `public/mock` 中的样例数据。
+
 ## Getting Started
 
 First, run the development server:
