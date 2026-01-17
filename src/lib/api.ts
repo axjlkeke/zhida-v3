@@ -14,6 +14,33 @@ export type ApiFailure = {
 
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
 
+const DEFAULT_BASE_URL = "http://127.0.0.1:3001";
+const DEFAULT_TIMEOUT_MS = 5000;
+
+export function getApiBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_BASE_URL;
+}
+
+export function getApiTimeoutMs(): number {
+  const raw = process.env.NEXT_PUBLIC_API_TIMEOUT_MS;
+  const parsed = raw ? Number(raw) : DEFAULT_TIMEOUT_MS;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TIMEOUT_MS;
+}
+
+export function buildApiUrl(path: string, query?: Record<string, string | number | boolean | undefined | null>): string {
+  const base = getApiBaseUrl();
+  const url = new URL(path, base);
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        return;
+      }
+      url.searchParams.set(key, String(value));
+    });
+  }
+  return url.toString();
+}
+
 export async function fetchJson<T>(
   url: string,
   options?: {
@@ -79,4 +106,23 @@ export async function fetchJson<T>(
   } finally {
     clearTimeout(timer);
   }
+}
+
+export async function fetchApiJson<T>(
+  path: string,
+  options?: {
+    query?: Record<string, string | number | boolean | undefined | null>;
+    timeoutMs?: number;
+    init?: RequestInit;
+  }
+): Promise<T> {
+  const { query, timeoutMs, init } = options ?? {};
+  const result = await fetchJson<T>(buildApiUrl(path, query), {
+    timeoutMs: timeoutMs ?? getApiTimeoutMs(),
+    init,
+  });
+  if (!result.ok) {
+    throw new Error(result.error || "Request failed");
+  }
+  return result.data;
 }

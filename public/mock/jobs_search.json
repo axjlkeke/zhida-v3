@@ -1,0 +1,257 @@
+{
+  "ok": true,
+  "page": 1,
+  "page_size": 20,
+  "total": 20,
+  "include_reasons": true,
+  "data": [
+    {
+      "id": 101,
+      "company": "Mock央企A",
+      "title": "数据分析实习生",
+      "city": "北京",
+      "degree": "本科",
+      "major": "计算机科学",
+      "apply_end": "2026-02-28",
+      "status": "active",
+      "hitReasons": {
+        "major": {
+          "query": "计科",
+          "expanded": ["计算机科学", "计科"],
+          "hitToken": "计算机科学",
+          "rule": "synonym"
+        }
+      }
+    },
+    {
+      "id": 102,
+      "company": "Mock央企B",
+      "title": "软件工程岗",
+      "city": "上海",
+      "degree": "硕士",
+      "major": "软件工程",
+      "apply_end": "2026-03-15",
+      "status": "active",
+      "hitReasons": {
+        "city": {
+          "query": "上海",
+          "expanded": ["上海"],
+          "hitToken": "上海",
+          "rule": "softContains"
+        }
+      }
+    },
+    {
+      "id": 103,
+      "company": "Mock央企C",
+      "title": "会计岗",
+      "city": "广州",
+      "degree": "本科",
+      "major": "会计学",
+      "apply_end": "2026-01-31",
+      "status": "active",
+      "hitReasons": {
+        "degree": {
+          "query": "本科",
+          "expanded": ["本科"],
+          "hitToken": "本科",
+          "rule": "softContains"
+        }
+      }
+    },
+    {
+      "id": 104,
+      "company": "Mock央企D",
+      "title": "运维岗",
+      "city": "深圳",
+      "degree": "本科",
+      "major": "计算机类",
+      "apply_end": "2026-04-01",
+      "status": "active",
+      "hitReasons": {
+        "title": {
+          "query": "运维",
+          "expanded": ["运维"],
+          "hitToken": "运维",
+          "rule": "subsequence"
+        }
+      }
+    },
+    {
+      "id": 105,
+      "company": "Mock央企E",
+      "title": "产品助理",
+      "city": "杭州",
+      "degree": "本科",
+      "major": "工商管理",
+      "apply_end": "2026-02-10",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 106,
+      "company": "Mock央企F",
+      "title": "风控专员",
+      "city": "北京",
+      "degree": "硕士",
+      "major": "金融学",
+      "apply_end": "2026-03-01",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 107,
+      "company": "Mock央企G",
+      "title": "市场分析",
+      "city": "南京",
+      "degree": "本科",
+      "major": "市场营销",
+      "apply_end": "2026-03-20",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 108,
+      "company": "Mock央企H",
+      "title": "电气工程岗",
+      "city": "武汉",
+      "degree": "本科",
+      "major": "电气工程",
+      "apply_end": "2026-02-25",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 109,
+      "company": "Mock央企I",
+      "title": "土木工程岗",
+      "city": "成都",
+      "degree": "本科",
+      "major": "土木工程",
+      "apply_end": "2026-03-10",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 110,
+      "company": "Mock央企J",
+      "title": "人力资源岗",
+      "city": "北京",
+      "degree": "本科",
+      "major": "人力资源管理",
+      "apply_end": "2026-02-18",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 111,
+      "company": "Mock央企K",
+      "title": "项目管理岗",
+      "city": "上海",
+      "degree": "本科",
+      "major": "工程管理",
+      "apply_end": "2026-03-05",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 112,
+      "company": "Mock央企L",
+      "title": "法务岗",
+      "city": "深圳",
+      "degree": "硕士",
+      "major": "法学",
+      "apply_end": "2026-04-20",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 113,
+      "company": "Mock央企M",
+      "title": "物流规划岗",
+      "city": "天津",
+      "degree": "本科",
+      "major": "物流管理",
+      "apply_end": "2026-03-22",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 114,
+      "company": "Mock央企N",
+      "title": "采购专员",
+      "city": "南京",
+      "degree": "本科",
+      "major": "供应链管理",
+      "apply_end": "2026-03-11",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 115,
+      "company": "Mock央企O",
+      "title": "运营岗",
+      "city": "杭州",
+      "degree": "本科",
+      "major": "工商管理",
+      "apply_end": "2026-03-30",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 116,
+      "company": "Mock央企P",
+      "title": "审计岗",
+      "city": "北京",
+      "degree": "本科",
+      "major": "审计学",
+      "apply_end": "2026-02-12",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 117,
+      "company": "Mock央企Q",
+      "title": "财务岗",
+      "city": "上海",
+      "degree": "本科",
+      "major": "财务管理",
+      "apply_end": "2026-03-08",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 118,
+      "company": "Mock央企R",
+      "title": "网络安全岗",
+      "city": "广州",
+      "degree": "硕士",
+      "major": "信息安全",
+      "apply_end": "2026-04-15",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 119,
+      "company": "Mock央企S",
+      "title": "数据工程岗",
+      "city": "北京",
+      "degree": "硕士",
+      "major": "大数据",
+      "apply_end": "2026-02-28",
+      "status": "active",
+      "hitReasons": {}
+    },
+    {
+      "id": 120,
+      "company": "Mock央企T",
+      "title": "AI 研究岗",
+      "city": "深圳",
+      "degree": "博士",
+      "major": "人工智能",
+      "apply_end": "2026-05-01",
+      "status": "active",
+      "hitReasons": {}
+    }
+  ]
+}

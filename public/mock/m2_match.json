@@ -1,0 +1,50 @@
+{
+  "ok": true,
+  "run_id": "mock-run-001",
+  "rule_version": "m2-v1",
+  "students": 1,
+  "matches": 50,
+  "limitPerStudent": 50,
+  "items": [
+    {
+      "student_id": 1,
+      "job_id": 37180,
+      "total_score": 95,
+      "score_breakdown": {
+        "major": 50,
+        "city": 20,
+        "degree": 15,
+        "job_type": 10
+      },
+      "reasons": {
+        "major": {
+          "query": "计算机科学",
+          "expanded": ["计算机科学"],
+          "hitToken": "计算机科学",
+          "rule": "softContains"
+        }
+      },
+      "rule_version": "m2-v1"
+    },
+    {
+      "student_id": 1,
+      "job_id": 37181,
+      "total_score": 90,
+      "score_breakdown": {
+        "major": 50,
+        "city": 20,
+        "degree": 15,
+        "job_type": 5
+      },
+      "reasons": {
+        "city": {
+          "query": "北京",
+          "expanded": ["北京"],
+          "hitToken": "北京",
+          "rule": "softContains"
+        }
+      },
+      "rule_version": "m2-v1"
+    }
+  ]
+}
