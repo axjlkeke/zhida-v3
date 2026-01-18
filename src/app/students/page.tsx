@@ -35,17 +35,18 @@ const normalizeImport = (resp: unknown): ImportResult => {
 };
 
 export default function StudentsPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<ImportResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const dataMode = useMemo(() => getDataMode(), []);
   const { mode, source } = dataMode;
-  const [mockLoaded, setMockLoaded] = useState(false);
-  const [mockRows, setMockRows] = useState(0);
-  const [mockRawType, setMockRawType] = useState("unknown");
-  const [mockRawLen, setMockRawLen] = useState(0);
-  const [mockRenderedLen, setMockRenderedLen] = useState(0);
+  const initialMock = mode === "mock" ? normalizeImport(importMockPayload as unknown) : null;
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<ImportResult | null>(initialMock);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mockLoaded, setMockLoaded] = useState(mode === "mock");
+  const [mockRows, setMockRows] = useState(mode === "mock" ? 1 : 0);
+  const [mockRawType, setMockRawType] = useState(mode === "mock" ? "object" : "unknown");
+  const [mockRawLen, setMockRawLen] = useState(mode === "mock" ? 1 : 0);
+  const [mockRenderedLen, setMockRenderedLen] = useState(mode === "mock" ? 1 : 0);
   const [mockSource] = useState("/mock/m2_import.json");
 
   const banner = mode === "mock" ? (
