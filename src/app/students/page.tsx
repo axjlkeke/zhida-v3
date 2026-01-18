@@ -42,6 +42,9 @@ export default function StudentsPage() {
   const { mode, source } = dataMode;
   const [mockLoaded, setMockLoaded] = useState(false);
   const [mockRows, setMockRows] = useState(0);
+  const [mockRawType, setMockRawType] = useState("unknown");
+  const [mockRawLen, setMockRawLen] = useState(0);
+  const [mockRenderedLen, setMockRenderedLen] = useState(0);
   const [mockSource] = useState("/mock/m2_import.json");
 
   const banner = mode === "mock" ? (
@@ -50,6 +53,9 @@ export default function StudentsPage() {
       <div className="mt-1 text-xs text-yellow-700">
         mock_loaded: {mockLoaded ? "true" : "false"} · mock_rows: {mockRows} · mock_source: {mockSource}
     </div>
+      <div className="mt-1 text-xs text-yellow-700">
+        mock_raw_type: {mockRawType} · mock_len: {mockRawLen} · rendered_len: {mockRenderedLen}
+      </div>
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
@@ -61,15 +67,23 @@ export default function StudentsPage() {
     setError(null);
     setLoading(true);
     try {
-      const mockRes = await fetch(mockSource);
+      const mockRes = await fetch(mockSource, { cache: "no-store" });
       const mockJson = (await mockRes.json()) as unknown;
       const normalized = normalizeImport(mockJson);
       setResult(normalized);
       setMockLoaded(true);
       setMockRows(1);
+      const rawType = Array.isArray(mockJson) ? "array" : mockJson ? "object" : "unknown";
+      const rawLen = Array.isArray(mockJson) ? mockJson.length : mockJson ? 1 : 0;
+      setMockRawType(rawType);
+      setMockRawLen(rawLen);
+      setMockRenderedLen(1);
     } catch {
       setMockLoaded(false);
       setMockRows(0);
+      setMockRawType("unknown");
+      setMockRawLen(0);
+      setMockRenderedLen(0);
       setError("无法加载样例数据，请稍后重试。");
     } finally {
       setLoading(false);

@@ -49,6 +49,9 @@ export default function MatchPage() {
   const { mode, source } = dataMode;
   const [mockLoaded, setMockLoaded] = useState(false);
   const [mockRows, setMockRows] = useState(0);
+  const [mockRawType, setMockRawType] = useState("unknown");
+  const [mockRawLen, setMockRawLen] = useState(0);
+  const [mockRenderedLen, setMockRenderedLen] = useState(0);
   const [mockSource] = useState("/mock/m2_match.json");
 
   const banner = mode === "mock" ? (
@@ -57,6 +60,9 @@ export default function MatchPage() {
       <div className="mt-1 text-xs text-yellow-700">
         mock_loaded: {mockLoaded ? "true" : "false"} · mock_rows: {mockRows} · mock_source: {mockSource}
     </div>
+      <div className="mt-1 text-xs text-yellow-700">
+        mock_raw_type: {mockRawType} · mock_len: {mockRawLen} · rendered_len: {mockRenderedLen}
+      </div>
     </div>
   ) : (
     <div className="rounded-md border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
@@ -68,20 +74,34 @@ export default function MatchPage() {
     setError(null);
     setLoading(true);
     try {
-      const mockRes = await fetch(mockSource);
+      const mockRes = await fetch(mockSource, { cache: "no-store" });
       const mockJson = (await mockRes.json()) as unknown;
       const normalized = normalizeMatches(mockJson);
       const runIdFromPayload =
         typeof (mockJson as { run_id?: unknown })?.run_id === "string"
           ? (mockJson as { run_id: string }).run_id
           : null;
+      const rawType = Array.isArray(mockJson) ? "array" : mockJson ? "object" : "unknown";
+      const rawLen = Array.isArray(mockJson)
+        ? mockJson.length
+        : Array.isArray((mockJson as { data?: unknown })?.data)
+          ? ((mockJson as { data: unknown[] }).data ?? []).length
+          : Array.isArray((mockJson as { items?: unknown })?.items)
+            ? ((mockJson as { items: unknown[] }).items ?? []).length
+            : 0;
       setItems(normalized);
       setRunId(runIdFromPayload);
       setMockLoaded(true);
       setMockRows(normalized.length);
+      setMockRawType(rawType);
+      setMockRawLen(rawLen);
+      setMockRenderedLen(normalized.length);
     } catch {
       setMockLoaded(false);
       setMockRows(0);
+      setMockRawType("unknown");
+      setMockRawLen(0);
+      setMockRenderedLen(0);
       setError("无法加载样例数据，请稍后重试。");
     } finally {
       setLoading(false);
