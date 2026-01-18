@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchApiJson } from "@/lib/api";
 import { getDataMode } from "@/lib/dataMode";
+import matchMockPayload from "../../../public/mock/m2_match.json";
 
 type MatchItem = {
   student_id: number;
@@ -97,12 +98,28 @@ export default function MatchPage() {
       setMockRawLen(rawLen);
       setMockRenderedLen(normalized.length);
     } catch {
-      setMockLoaded(false);
-      setMockRows(0);
-      setMockRawType("unknown");
-      setMockRawLen(0);
-      setMockRenderedLen(0);
-      setError("无法加载样例数据，请稍后重试。");
+      const fallback = matchMockPayload as unknown;
+      const normalized = normalizeMatches(fallback);
+      const runIdFromPayload =
+        typeof (fallback as { run_id?: unknown })?.run_id === "string"
+          ? (fallback as { run_id: string }).run_id
+          : null;
+      const rawType = Array.isArray(fallback) ? "array" : fallback ? "object" : "unknown";
+      const rawLen = Array.isArray(fallback)
+        ? fallback.length
+        : Array.isArray((fallback as { data?: unknown })?.data)
+          ? ((fallback as { data: unknown[] }).data ?? []).length
+          : Array.isArray((fallback as { items?: unknown })?.items)
+            ? ((fallback as { items: unknown[] }).items ?? []).length
+            : 0;
+      setItems(normalized);
+      setRunId(runIdFromPayload);
+      setMockLoaded(true);
+      setMockRows(normalized.length);
+      setMockRawType(rawType);
+      setMockRawLen(rawLen);
+      setMockRenderedLen(normalized.length);
+      setError("无法从网络获取样例数据，已使用本地 Mock。");
     } finally {
       setLoading(false);
     }

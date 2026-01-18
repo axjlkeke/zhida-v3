@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, fetchJson, getApiTimeoutMs } from "@/lib/api";
 import { getDataMode } from "@/lib/dataMode";
+import importMockPayload from "../../../public/mock/m2_import.json";
 
 type ImportResult = {
   ok: boolean;
@@ -79,12 +80,17 @@ export default function StudentsPage() {
       setMockRawLen(rawLen);
       setMockRenderedLen(1);
     } catch {
-      setMockLoaded(false);
-      setMockRows(0);
-      setMockRawType("unknown");
-      setMockRawLen(0);
-      setMockRenderedLen(0);
-      setError("无法加载样例数据，请稍后重试。");
+      const fallback = importMockPayload as unknown;
+      const normalized = normalizeImport(fallback);
+      const rawType = Array.isArray(fallback) ? "array" : fallback ? "object" : "unknown";
+      const rawLen = Array.isArray(fallback) ? fallback.length : fallback ? 1 : 0;
+      setResult(normalized);
+      setMockLoaded(true);
+      setMockRows(1);
+      setMockRawType(rawType);
+      setMockRawLen(rawLen);
+      setMockRenderedLen(1);
+      setError("无法从网络获取样例数据，已使用本地 Mock。");
     } finally {
       setLoading(false);
     }
